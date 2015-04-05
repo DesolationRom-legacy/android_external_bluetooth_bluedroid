@@ -863,6 +863,12 @@ static int out_set_parameters(struct audio_stream *stream, const char *kvpairs)
 
     parms = str_parms_create_str(kvpairs);
 
+    if(!parms)
+    {
+        ERROR("parms is NULL");
+        return retval;
+    }
+
     /* dump params */
     str_parms_dump(parms);
 
@@ -1293,7 +1299,6 @@ static void adev_close_output_stream(struct audio_hw_device *dev,
 
     INFO("closing output (state %d)", out->common.state);
 
-    pthread_mutex_lock(&out->common.lock);
     if ((out->common.state == AUDIO_A2DP_STATE_STARTED) || (out->common.state == AUDIO_A2DP_STATE_STOPPING))
         stop_audio_datapath(&out->common, false);
 
@@ -1306,7 +1311,6 @@ static void adev_close_output_stream(struct audio_hw_device *dev,
     pthread_mutex_unlock(&out->common.lock);
     free(stream);
     a2dp_dev->output = NULL;
-    pthread_mutex_unlock(&out->common.lock);
 
     INFO("done");
 }
@@ -1336,6 +1340,12 @@ static char * adev_get_parameters(const struct audio_hw_device *dev,
     FNLOG();
 
     parms = str_parms_create_str(keys);
+
+    if(!parms)
+    {
+        ERROR("parms is NULL");
+        return strdup("");
+    }
 
     str_parms_dump(parms);
 
